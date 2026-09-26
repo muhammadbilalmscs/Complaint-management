@@ -4,18 +4,14 @@
       <h1 id="complaints-heading">Complaints</h1>
     </ng-template>
     <ng-template #end>
-      <button pButton type="button" data-testid="new-complaint" (click)="onNewComplaint()">
+      <button pButton type="button" data-testid="new-complaint" (click)="createVisible = true">
         <svg data-p-icon="plus"></svg>
         New Complaint
       </button>
     </ng-template>
   </p-toolbar>
 
-  @if (showCreateHint) {
-    <p-message severity="info" data-testid="create-hint">
-      The new complaint form is added in the next phase.
-    </p-message>
-  }
+  <app-complaint-form [(visible)]="createVisible" (created)="onCreated()" />
 
   <div class="filters">
     <div class="field">
@@ -65,7 +61,7 @@
 
   <p-table
     #complaintsTable
-    [value]="complaints"
+    [value]="complaints()"
     [paginator]="true"
     [rows]="5"
     [rowsPerPageOptions]="[5, 10]"

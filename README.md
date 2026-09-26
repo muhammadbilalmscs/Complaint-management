@@ -6,9 +6,9 @@ This project is not affiliated with or endorsed by the European Council or the C
 
 ## Status
 
-Phase 2 is complete: the portal shell and a complaint list backed by mock data.
+Phase 3 is complete: the complaint list and a New Complaint dialog built with reactive forms. The Angular app can be hosted on Azure Static Web Apps with the in-memory sample complaints. There is no API yet.
 
-Later phases add the create-complaint dialog, the ASP.NET Core API, PostgreSQL, authentication, ActiveMQ, Docker, GitHub Actions, and Azure deployment notes.
+Later phases add the ASP.NET Core API, PostgreSQL, authentication, ActiveMQ, Docker, broader GitHub Actions, and the rest of the Azure deployment.
 
 ## Technology in this phase
 
@@ -34,7 +34,7 @@ npm install
 npm start
 ```
 
-Open http://localhost:4200/. You should see the CivicConnect header and a complaints table filled with sample rows. Search, status, and category filter that table. Dashboard shows a short summary of the same sample data.
+Open http://localhost:4200/. You should see the CivicConnect header and a complaints table filled with sample rows. New Complaint opens a dialog. Saving a valid complaint shows a success toast and adds the row to the table. Dashboard counts the same in-memory list.
 
 ```powershell
 cd frontend

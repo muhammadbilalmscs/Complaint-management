@@ -1,9 +1,17 @@
-import { Injectable } from '@angular/core';
-import { Complaint } from './complaint.model';
+import { Injectable, signal } from '@angular/core';
+import { Complaint, ComplaintCategory, ComplaintPriority } from './complaint.model';
+
+export interface NewComplaint {
+  title: string;
+  description: string;
+  category: ComplaintCategory;
+  priority: ComplaintPriority;
+  createdAt: Date;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ComplaintService {
-  private readonly complaints: Complaint[] = [
+  readonly complaints = signal<Complaint[]>([
     {
       id: 1,
       title: 'Road surface damage on High Street',
@@ -84,9 +92,32 @@ export class ComplaintService {
       createdAt: '2026-09-04T12:00:00',
       createdBy: 'Noah Williams',
     },
-  ];
+  ]);
 
-  getComplaints(): Complaint[] {
-    return this.complaints.map((complaint) => ({ ...complaint }));
+  create(draft: NewComplaint): Complaint {
+    const complaint: Complaint = {
+      id: this.nextId(),
+      title: draft.title.trim(),
+      description: draft.description.trim(),
+      category: draft.category,
+      priority: draft.priority,
+      status: 'Open',
+      createdAt: toCreatedAt(draft.createdAt),
+      createdBy: 'Demo User',
+    };
+
+    this.complaints.update((current) => [complaint, ...current]);
+    return complaint;
   }
+
+  private nextId(): number {
+    return this.complaints().reduce((highest, complaint) => Math.max(highest, complaint.id), 0) + 1;
+  }
+}
+
+function toCreatedAt(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}T12:00:00`;
 }

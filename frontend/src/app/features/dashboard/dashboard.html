@@ -1,7 +1,7 @@
 <section class="page">
   <h1>Dashboard</h1>
   <p-card header="Complaint summary" data-testid="dashboard-summary">
-    <p>{{ openCount }} open complaints out of {{ totalCount }} in the sample list.</p>
+    <p>{{ openCount() }} open complaints out of {{ totalCount() }} in the sample list.</p>
     <ng-template #footer>
       <button pButton type="button" routerLink="/complaints">View complaints</button>
     </ng-template>

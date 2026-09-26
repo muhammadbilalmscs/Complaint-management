@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -11,8 +11,10 @@ import { ComplaintService } from '../complaints/complaint.service';
   styleUrl: './dashboard.css',
 })
 export class Dashboard {
-  private readonly complaints = inject(ComplaintService).getComplaints();
+  private readonly complaints = inject(ComplaintService).complaints;
 
-  readonly totalCount = this.complaints.length;
-  readonly openCount = this.complaints.filter((complaint) => complaint.status === 'Open').length;
+  readonly totalCount = computed(() => this.complaints().length);
+  readonly openCount = computed(
+    () => this.complaints().filter((complaint) => complaint.status === 'Open').length,
+  );
 }

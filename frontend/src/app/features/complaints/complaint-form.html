@@ -1,0 +1,110 @@
+<p-dialog
+  header="New Complaint"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: 'min(32rem, 95vw)' }"
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  data-testid="complaint-dialog"
+>
+  <form id="complaint-form" class="form" [formGroup]="form" (ngSubmit)="save()">
+    <p class="hint">Status is set to Open. The complaint is recorded for Demo User.</p>
+
+    <div class="field">
+      <label for="complaint-title">Subject</label>
+      <input
+        id="complaint-title"
+        pInputText
+        type="text"
+        formControlName="title"
+        [invalid]="isInvalid('title')"
+        data-testid="complaint-title"
+        autocomplete="off"
+      />
+      @if (errorMessage('title'); as message) {
+        <p-message severity="error" size="small" variant="simple">{{ message }}</p-message>
+      }
+    </div>
+
+    <div class="field">
+      <label for="complaint-description">Description</label>
+      <textarea
+        id="complaint-description"
+        pTextarea
+        rows="4"
+        formControlName="description"
+        [invalid]="isInvalid('description')"
+        data-testid="complaint-description"
+      ></textarea>
+      @if (errorMessage('description'); as message) {
+        <p-message severity="error" size="small" variant="simple">{{ message }}</p-message>
+      }
+    </div>
+
+    <div class="field">
+      <label for="complaint-category">Category</label>
+      <p-select
+        inputId="complaint-category"
+        formControlName="category"
+        [options]="categories"
+        placeholder="Select a category"
+        [fluid]="true"
+        appendTo="body"
+        [invalid]="isInvalid('category')"
+        data-testid="complaint-category"
+      />
+      @if (errorMessage('category'); as message) {
+        <p-message severity="error" size="small" variant="simple">{{ message }}</p-message>
+      }
+    </div>
+
+    <div class="field">
+      <label for="complaint-priority">Priority</label>
+      <p-select
+        inputId="complaint-priority"
+        formControlName="priority"
+        [options]="priorities"
+        placeholder="Select a priority"
+        [fluid]="true"
+        appendTo="body"
+        [invalid]="isInvalid('priority')"
+        data-testid="complaint-priority"
+      />
+      @if (errorMessage('priority'); as message) {
+        <p-message severity="error" size="small" variant="simple">{{ message }}</p-message>
+      }
+    </div>
+
+    <div class="field">
+      <label for="complaint-date">Date</label>
+      <p-datepicker
+        inputId="complaint-date"
+        formControlName="createdAt"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        [fluid]="true"
+        appendTo="body"
+        [invalid]="isInvalid('createdAt')"
+        data-testid="complaint-date"
+      />
+      @if (errorMessage('createdAt'); as message) {
+        <p-message severity="error" size="small" variant="simple">{{ message }}</p-message>
+      }
+    </div>
+  </form>
+
+  <ng-template #footer>
+    <button
+      pButton
+      type="button"
+      severity="secondary"
+      variant="outlined"
+      data-testid="cancel-complaint"
+      (click)="cancel()"
+    >
+      Cancel
+    </button>
+    <button pButton type="submit" form="complaint-form" data-testid="save-complaint">Save</button>
+  </ng-template>
+</p-dialog>

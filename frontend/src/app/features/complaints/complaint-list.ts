@@ -1,20 +1,15 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Plus } from '@primeicons/angular/plus';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { MessageModule } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
 import { Table, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ToolbarModule } from 'primeng/toolbar';
-import {
-  Complaint,
-  ComplaintCategory,
-  ComplaintPriority,
-  ComplaintStatus,
-} from './complaint.model';
+import { ComplaintForm } from './complaint-form';
+import { ComplaintCategory, ComplaintPriority, ComplaintStatus } from './complaint.model';
 import { ComplaintService } from './complaint.service';
 
 type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary';
@@ -30,17 +25,19 @@ type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary';
     InputTextModule,
     SelectModule,
     TagModule,
-    MessageModule,
     Plus,
+    ComplaintForm,
   ],
   templateUrl: './complaint-list.html',
   styleUrl: './complaint-list.css',
 })
 export class ComplaintList {
   private readonly complaintService = inject(ComplaintService);
+  private readonly complaintsTable = viewChild<Table>('complaintsTable');
 
-  readonly complaints: Complaint[] = this.complaintService.getComplaints();
+  readonly complaints = this.complaintService.complaints;
   readonly searchFields = ['title', 'description'];
+  createVisible = false;
 
   readonly statusOptions: { label: string; value: ComplaintStatus }[] = [
     { label: 'Open', value: 'Open' },
@@ -60,7 +57,6 @@ export class ComplaintList {
 
   statusFilter: ComplaintStatus | null = null;
   categoryFilter: ComplaintCategory | null = null;
-  showCreateHint = false;
 
   onSearch(event: Event, table: Table): void {
     const value = (event.target as HTMLInputElement).value;
@@ -71,8 +67,18 @@ export class ComplaintList {
     table.filter(value, field, 'equals');
   }
 
-  onNewComplaint(): void {
-    this.showCreateHint = true;
+  onCreated(): void {
+    this.statusFilter = null;
+    this.categoryFilter = null;
+    const table = this.complaintsTable();
+    if (!table) {
+      return;
+    }
+
+    table.filter(null, 'status', 'equals');
+    table.filter(null, 'category', 'equals');
+    table.filterGlobal('', 'contains');
+    table.first.set(0);
   }
 
   prioritySeverity(priority: ComplaintPriority): TagSeverity {
