@@ -1,0 +1,76 @@
+.shell {
+  min-height: 100vh;
+}
+
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  padding: 1rem 1.5rem;
+  background: #0f2c4c;
+  color: #ffffff;
+}
+
+.brand-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.brand {
+  color: inherit;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #d9e2ec;
+  font-size: 0.8rem;
+}
+
+nav {
+  display: flex;
+  gap: 0.35rem;
+}
+
+nav a {
+  color: #ffffff;
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+nav a.active {
+  background: rgb(255 255 255 / 16%);
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user .p-button {
+  color: #ffffff;
+  background: transparent;
+  border-color: rgb(255 255 255 / 70%);
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+footer {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem 2rem;
+  color: #52606d;
+  font-size: 0.85rem;
+}

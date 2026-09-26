@@ -1,0 +1,29 @@
+<div class="shell">
+  <header class="topbar">
+    <div class="brand-block">
+      <a routerLink="/complaints" class="brand">CivicConnect</a>
+      <p class="eyebrow">Public Service Complaint Portal</p>
+    </div>
+
+    <nav aria-label="Primary">
+      <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+      <a routerLink="/complaints" routerLinkActive="active">Complaints</a>
+    </nav>
+
+    <div class="user">
+      <span>Demo User</span>
+      <button pButton type="button" severity="secondary" variant="outlined" data-testid="logout">
+        Logout
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <router-outlet />
+  </main>
+
+  <footer>
+    Personal technical demonstration. Not affiliated with or endorsed by the European Council or
+    the Council of the European Union.
+  </footer>
+</div>

@@ -1,0 +1,127 @@
+<section class="page">
+  <p-toolbar ariaLabelledBy="complaints-heading">
+    <ng-template #start>
+      <h1 id="complaints-heading">Complaints</h1>
+    </ng-template>
+    <ng-template #end>
+      <button pButton type="button" data-testid="new-complaint" (click)="onNewComplaint()">
+        <svg data-p-icon="plus"></svg>
+        New Complaint
+      </button>
+    </ng-template>
+  </p-toolbar>
+
+  @if (showCreateHint) {
+    <p-message severity="info" data-testid="create-hint">
+      The new complaint form is added in the next phase.
+    </p-message>
+  }
+
+  <div class="filters">
+    <div class="field">
+      <label for="complaint-search">Search</label>
+      <input
+        id="complaint-search"
+        pInputText
+        type="search"
+        data-testid="complaint-search"
+        placeholder="Subject or description"
+        (input)="onSearch($event, complaintsTable)"
+      />
+    </div>
+
+    <div class="field">
+      <label for="status-filter">Status</label>
+      <p-select
+        inputId="status-filter"
+        data-testid="status-filter"
+        [options]="statusOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="All"
+        [showClear]="true"
+        appendTo="body"
+        [(ngModel)]="statusFilter"
+        (ngModelChange)="filterField(complaintsTable, 'status', $event)"
+      />
+    </div>
+
+    <div class="field">
+      <label for="category-filter">Category</label>
+      <p-select
+        inputId="category-filter"
+        data-testid="category-filter"
+        [options]="categoryOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="All"
+        [showClear]="true"
+        appendTo="body"
+        [(ngModel)]="categoryFilter"
+        (ngModelChange)="filterField(complaintsTable, 'category', $event)"
+      />
+    </div>
+  </div>
+
+  <p-table
+    #complaintsTable
+    [value]="complaints"
+    [paginator]="true"
+    [rows]="5"
+    [rowsPerPageOptions]="[5, 10]"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="{first}–{last} of {totalRecords}"
+    [globalFilterFields]="searchFields"
+    sortField="createdAt"
+    [sortOrder]="-1"
+    data-testid="complaint-table"
+  >
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="id" style="width: 5rem">
+          ID
+          <p-sorticon field="id" />
+        </th>
+        <th pSortableColumn="title">
+          Subject
+          <p-sorticon field="title" />
+        </th>
+        <th pSortableColumn="category">
+          Category
+          <p-sorticon field="category" />
+        </th>
+        <th pSortableColumn="priority">
+          Priority
+          <p-sorticon field="priority" />
+        </th>
+        <th pSortableColumn="status">
+          Status
+          <p-sorticon field="status" />
+        </th>
+        <th pSortableColumn="createdAt">
+          Date
+          <p-sorticon field="createdAt" />
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-complaint>
+      <tr [attr.data-testid]="'complaint-row-' + complaint.id">
+        <td>{{ complaint.id }}</td>
+        <td>{{ complaint.title }}</td>
+        <td>{{ complaint.category }}</td>
+        <td>
+          <p-tag [value]="complaint.priority" [severity]="prioritySeverity(complaint.priority)" />
+        </td>
+        <td>
+          <p-tag [value]="complaint.status" [severity]="statusSeverity(complaint.status)" />
+        </td>
+        <td>{{ complaint.createdAt | date: 'dd MMM yyyy' }}</td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="6">No complaints match the current filters.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</section>
