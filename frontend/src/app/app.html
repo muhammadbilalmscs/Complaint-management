@@ -1,0 +1,49 @@
+<div class="app-shell">
+  <p-toolbar ariaLabelledBy="app-title">
+    <ng-template #start>
+      <div class="brand">
+        <span class="pi pi-building brand-icon" aria-hidden="true"></span>
+        <div>
+          <h1 id="app-title" class="brand-title">CivicConnect</h1>
+          <p class="brand-subtitle">Public Service Complaint Portal</p>
+        </div>
+      </div>
+    </ng-template>
+  </p-toolbar>
+
+  <main class="app-main">
+    <p-card header="Application shell" subheader="Angular and PrimeNG">
+      <div class="stack">
+        <p-message severity="info">
+          Personal technical demonstration. Not affiliated with or endorsed by the European Council
+          or the Council of the European Union.
+        </p-message>
+
+        <p class="setup-copy">
+          This screen confirms that standalone Angular components, the Aura theme, and PrimeIcons
+          are configured. Login and complaints are added in later phases.
+        </p>
+
+        <div class="setup-actions">
+          <button
+            type="button"
+            pButton
+            data-testid="primeng-ready-button"
+            (click)="confirmPrimeNg()"
+          >
+            <span class="pi pi-check" aria-hidden="true"></span>
+            Check PrimeNG
+          </button>
+        </div>
+
+        @if (primengChecked()) {
+          <div data-testid="primeng-ready-message">
+            <p-message severity="success">
+              PrimeNG is wired up. This message was shown after the button click.
+            </p-message>
+          </div>
+        }
+      </div>
+    </p-card>
+  </main>
+</div>
