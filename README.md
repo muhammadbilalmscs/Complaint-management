@@ -141,4 +141,4 @@ npx ng test --watch=false
 - PrimeNG 22 shows a red **Invalid PrimeUI License** banner until a Community or Commercial key is added locally in `providePrimeNG`.
 - The route table is empty. The shell is the root component, not a routed feature.
 - Unit tests use Vitest and jsdom. Cypress is a later phase.
-- The production bundle is about 517 kB because PrimeNG injects its styled theme. The Angular starter budget warning of 500 kB was raised to 600 kB. The build still fails above 1 MB.
+- A production build of this shell is about 517 kB. PrimeNG's styled theme is most of that, and the bundle grows as more components are imported. The Angular starter budgets (500 kB warning, 1 MB error) fail that growth: a 1.24 MB initial bundle stops the build. The budgets in `angular.json` are 1.5 MB warning and 2 MB error. `npm run build` still minifies; the development build is larger and is not the one these budgets check.
