@@ -23,6 +23,16 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "server.js",
+                "input": "azure",
+                "output": "."
+              },
+              {
+                "glob": "package.json",
+                "input": "azure",
+                "output": "."
               }
             ],
             "styles": [
@@ -30,22 +40,27 @@
             ]
           },
           "configurations": {
-  "production": {
-    "budgets": [
-      {
-        "type": "initial",
-        "maximumWarning": "1.5MB",
-        "maximumError": "2MB"
-      },
-      {
-        "type": "anyComponentStyle",
-        "maximumWarning": "4kB",
-        "maximumError": "8kB"
-      }
-    ],
-    "outputHashing": "all"
-  }
-},
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "1.5MB",
+                  "maximumError": "2MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
           "defaultConfiguration": "production"
         },
         "serve": {

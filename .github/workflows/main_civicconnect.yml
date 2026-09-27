@@ -19,21 +19,24 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Node.js version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '24.x'
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
       - name: npm install, build, and test
+        working-directory: frontend
         run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
+          npm ci
+          npm run build
+          npm test -- --watch=false
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
+          path: frontend/dist/civic-connect/browser
 
   deploy:
     runs-on: ubuntu-latest
@@ -47,7 +50,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-      
+          path: release
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -55,11 +59,22 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_A2FECD6A136245528E346719B7474636 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_481F6E9CAF4C430FB3FAB042528673B4 }}
 
+      - name: Set the Linux startup command
+        run: |
+          resource_group=$(az webapp list --query "[?name=='CivicConnect'].resourceGroup | [0]" -o tsv)
+          if [ -z "$resource_group" ]; then
+            echo "Could not find the CivicConnect App Service in this subscription."
+            exit 1
+          fi
+          az webapp config set \
+            --name CivicConnect \
+            --resource-group "$resource_group" \
+            --startup-file "node server.js"
+
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'CivicConnect'
           slot-name: 'Production'
-          package: .
-          
+          package: release
