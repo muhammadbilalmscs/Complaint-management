@@ -28,6 +28,12 @@ jobs:
           npm run build --if-present
           npm run test --if-present -- --watch=false
 
+      - name: Add the static site server
+        run: |
+          cp frontend/azure/server.js frontend/dist/civic-connect/browser/server.js
+          cp frontend/azure/package.json frontend/dist/civic-connect/browser/package.json
+          cp frontend/azure/web.config frontend/dist/civic-connect/browser/web.config
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
@@ -35,7 +41,6 @@ jobs:
           path: frontend/dist/civic-connect/browser
 
   deploy:
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: build
     permissions:
@@ -54,6 +59,11 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_E40F8732DB0447C59C4DAD8FEF5E668B }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_A2FECD6A136245528E346719B7474636 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_481F6E9CAF4C430FB3FAB042528673B4 }}
+
+      - name: Serve the static Angular site
+        run: |
+          rg=$(az webapp list --query "[?name=='CivicConnect'].resourceGroup | [0]" -o tsv)
+          az webapp config set --name CivicConnect --resource-group "$rg" --startup-file "node server.js"
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
