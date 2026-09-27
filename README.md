@@ -41,3 +41,9 @@ cd frontend
 npm test
 npm run build
 ```
+
+## Azure Static Web Apps
+
+`npm run build` writes the production site to `frontend/dist/civic-connect/browser`. Complaints stay in the in-memory sample list. `frontend/public/staticwebapp.config.json` is copied into that folder and tells Static Web Apps to serve `index.html` for `/complaints` and `/dashboard`, so a refresh does not return 404.
+
+The GitHub Action is `.github/workflows/azure-static-web-apps.yml`. It builds with Node 24, then uploads that folder. The repository secret `AZURE_STATIC_WEB_APPS_API_TOKEN` is the deployment token from the Static Web App.
