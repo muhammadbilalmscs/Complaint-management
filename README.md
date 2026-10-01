@@ -122,4 +122,4 @@ npm run build
 
 A push to `main` builds the Angular app, publishes the API with those files, and deploys that package to the CivicConnect App Service. The workflow switches the Linux stack to `DOTNETCORE|10.0` and starts `dotnet CivicConnect.Api.dll`.
 
-The API reads `ConnectionStrings__DefaultConnection`. Put the Azure PostgreSQL connection string in the App Service configuration, or store it as the GitHub secret `POSTGRES_CONNECTION_STRING` so the workflow sets it. Do not commit the password. Without that setting the site cannot open the database.
+The API uses PostgreSQL when `ConnectionStrings__DefaultConnection` is set. On Azure that value is empty unless you add the App Setting or the GitHub secret `POSTGRES_CONNECTION_STRING`. In that case the same App Service stores complaints in a SQLite file under the app's home directory, so a separate database is not required for the site to run. Do not commit a database password.

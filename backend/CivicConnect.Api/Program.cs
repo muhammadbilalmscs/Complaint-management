@@ -6,13 +6,27 @@ using Swashbuckle.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrWhiteSpace(connectionString))
+var useSqlite = string.IsNullOrWhiteSpace(connectionString);
+string? sqlitePath = null;
+
+if (useSqlite)
 {
-    throw new InvalidOperationException(
-        "Connection string 'DefaultConnection' is not configured. Set ConnectionStrings__DefaultConnection or appsettings.Development.json.");
+    var dataDirectory = ResolveDataDirectory();
+    Directory.CreateDirectory(dataDirectory);
+    sqlitePath = Path.Combine(dataDirectory, "civicconnect.db");
 }
 
-builder.Services.AddDbContext<CivicConnectDbContext>(options => options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<CivicConnectDbContext>(options =>
+{
+    if (useSqlite)
+    {
+        options.UseSqlite($"Data Source={sqlitePath}");
+    }
+    else
+    {
+        options.UseNpgsql(connectionString);
+    }
+});
 builder.Services.AddScoped<ComplaintService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -31,10 +45,23 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+if (useSqlite)
+{
+    app.Logger.LogWarning("No PostgreSQL connection string is configured. Complaints are stored in {DatabasePath}.", sqlitePath);
+}
+
 await using (var scope = app.Services.CreateAsyncScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<CivicConnectDbContext>();
-    await db.Database.MigrateAsync();
+    if (useSqlite)
+    {
+        await db.Database.EnsureCreatedAsync();
+    }
+    else
+    {
+        await db.Database.MigrateAsync();
+    }
+
     await ComplaintSeed.SeedAsync(db);
 }
 
@@ -56,3 +83,20 @@ app.MapControllers();
 app.MapFallbackToFile("index.html");
 
 app.Run();
+
+static string ResolveDataDirectory()
+{
+    var configured = Environment.GetEnvironmentVariable("CIVICCONNECT_DATA");
+    if (!string.IsNullOrWhiteSpace(configured))
+    {
+        return configured;
+    }
+
+    var home = Environment.GetEnvironmentVariable("HOME");
+    if (!string.IsNullOrWhiteSpace(home))
+    {
+        return Path.Combine(home, "data");
+    }
+
+    return Path.Combine(AppContext.BaseDirectory, "data");
+}

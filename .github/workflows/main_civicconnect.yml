@@ -90,7 +90,7 @@ jobs:
               --resource-group "$resource_group" \
               --settings ConnectionStrings__DefaultConnection="$POSTGRES_CONNECTION_STRING"
           else
-            echo "POSTGRES_CONNECTION_STRING is not set. The API starts only after that App Setting exists in Azure."
+            echo "POSTGRES_CONNECTION_STRING is not set. The API will store complaints in SQLite on the App Service."
           fi
 
       - name: 'Deploy to Azure Web App'
@@ -100,3 +100,8 @@ jobs:
           app-name: 'CivicConnect'
           slot-name: 'Production'
           package: release
+
+      - name: Start CivicConnect
+        run: |
+          resource_group=$(az webapp list --query "[?name=='CivicConnect'].resourceGroup | [0]" -o tsv)
+          az webapp start --name CivicConnect --resource-group "$resource_group"
