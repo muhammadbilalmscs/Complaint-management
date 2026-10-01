@@ -48,12 +48,7 @@ The backend is one ASP.NET Core Web API project. It uses Entity Framework Core a
 - PostgreSQL
 - Swagger UI in Development
 
-Angular calls the API through one setting:
-
-- Local `ng serve` uses `frontend/src/environments/environment.ts`: `http://localhost:5000/api`
-- The production build uses `environment.production.ts`: `/api`
-
-The Azure site is served by the API, so the browser calls the same host. Local development allows `http://localhost:4200` through CORS. The Azure site origin is also listed in `Cors:AllowedOrigins`.
+The browser always calls `/api` on the same host. Local `ng serve` forwards `/api` to `http://localhost:5000`. On Azure the API is that same site, so the deployed app does not call localhost.
 
 ### API endpoints
 
@@ -110,7 +105,7 @@ npm install
 npm start
 ```
 
-Open http://localhost:4200/. The complaint list requests `GET http://localhost:5000/api/complaints`. Saving the New Complaint dialog sends `POST http://localhost:5000/api/complaints`, then reloads the list. If the API is down, the page shows an error toast and does not invent a saved complaint. If saving fails, the dialog stays open.
+Open http://localhost:4200/. The complaint list requests `GET /api/complaints`, which the dev server forwards to the API. Saving the New Complaint dialog sends `POST /api/complaints`, then reloads the list. If the API is down, the page shows an error toast and does not invent a saved complaint. If saving fails, the dialog stays open.
 
 ```powershell
 cd frontend

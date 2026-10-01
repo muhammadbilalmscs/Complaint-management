@@ -5,6 +5,14 @@ using Swashbuckle.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME")))
+{
+    var port = Environment.GetEnvironmentVariable("PORT")
+        ?? Environment.GetEnvironmentVariable("WEBSITES_PORT")
+        ?? "8080";
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 var useSqlite = string.IsNullOrWhiteSpace(connectionString);
 string? sqlitePath = null;
