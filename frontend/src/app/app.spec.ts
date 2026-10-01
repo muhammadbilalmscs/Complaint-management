@@ -1,5 +1,8 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { environment } from '../environments/environment';
 import { App } from './app';
 import { routes } from './app.routes';
 
@@ -7,8 +10,14 @@ describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter(routes)],
+      providers: [provideRouter(routes), provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
+  });
+
+  afterEach(() => {
+    const http = TestBed.inject(HttpTestingController);
+    http.match(`${environment.apiUrl}/complaints`).forEach((request) => request.flush([]));
+    http.verify();
   });
 
   it('should create the app', () => {

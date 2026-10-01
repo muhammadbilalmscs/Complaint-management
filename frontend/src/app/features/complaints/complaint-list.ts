@@ -1,11 +1,13 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MessageService } from 'primeng/api';
 import { Plus } from '@primeicons/angular/plus';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { Table, TableModule } from 'primeng/table';
+import { MessageModule } from 'primeng/message';
 import { TagModule } from 'primeng/tag';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ComplaintForm } from './complaint-form';
@@ -25,6 +27,7 @@ type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary';
     InputTextModule,
     SelectModule,
     TagModule,
+    MessageModule,
     Plus,
     ComplaintForm,
   ],
@@ -33,9 +36,11 @@ type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary';
 })
 export class ComplaintList {
   private readonly complaintService = inject(ComplaintService);
+  private readonly messageService = inject(MessageService);
   private readonly complaintsTable = viewChild<Table>('complaintsTable');
 
   readonly complaints = this.complaintService.complaints;
+  readonly loadError = this.complaintService.loadError;
   readonly searchFields = ['title', 'description'];
   createVisible = false;
 
@@ -57,6 +62,19 @@ export class ComplaintList {
 
   statusFilter: ComplaintStatus | null = null;
   categoryFilter: ComplaintCategory | null = null;
+
+  constructor() {
+    this.complaintService.load().subscribe({
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Could not load complaints',
+          detail: 'The API is unavailable. Start the backend and refresh this page.',
+          life: 6000,
+        });
+      },
+    });
+  }
 
   onSearch(event: Event, table: Table): void {
     const value = (event.target as HTMLInputElement).value;

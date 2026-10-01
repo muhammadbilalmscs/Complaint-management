@@ -116,7 +116,13 @@
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="6">No complaints match the current filters.</td>
+        <td colspan="6">
+          @if (loadError()) {
+            The complaint list could not be loaded. Start the API and refresh this page.
+          } @else {
+            No complaints match the current filters.
+          }
+        </td>
       </tr>
     </ng-template>
   </p-table>

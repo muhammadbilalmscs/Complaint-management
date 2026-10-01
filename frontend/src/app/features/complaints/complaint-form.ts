@@ -34,6 +34,8 @@ export class ComplaintForm {
   private readonly complaintService = inject(ComplaintService);
   private readonly messageService = inject(MessageService);
 
+  saving = false;
+
   readonly categories: ComplaintCategory[] = [
     'Transport',
     'Utilities',
@@ -108,26 +110,41 @@ export class ComplaintForm {
     }
 
     const { title, description, category, priority, createdAt } = this.form.getRawValue();
-    if (!category || !priority || !createdAt) {
+    if (!category || !priority || !createdAt || this.saving) {
       return;
     }
 
-    this.visible.set(false);
-    const complaint = this.complaintService.create({
-      title,
-      description,
-      category,
-      priority,
-      createdAt,
-    });
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Complaint created',
-      detail: complaint.title,
-      life: 4000,
-    });
-    this.created.emit(complaint);
+    this.saving = true;
+    this.complaintService
+      .create({
+        title,
+        description,
+        category,
+        priority,
+        createdAt,
+      })
+      .subscribe({
+        next: (complaint) => {
+          this.saving = false;
+          this.visible.set(false);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Complaint created',
+            detail: complaint.title,
+            life: 4000,
+          });
+          this.created.emit(complaint);
+        },
+        error: () => {
+          this.saving = false;
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Complaint was not saved',
+            detail: 'The server could not save this complaint. Nothing was added to the list.',
+            life: 6000,
+          });
+        },
+      });
   }
 
   cancel(): void {

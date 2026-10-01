@@ -1,9 +1,8 @@
 export const environment = {
   /**
-   * CivicConnect API origin plus the /api prefix.
-   * Change this when the API is hosted somewhere other than the local backend.
+   * Same-origin API when the Angular app is served by CivicConnect.Api.
    */
-  apiUrl: 'http://localhost:5000/api',
+  apiUrl: '/api',
   /**
    * PrimeUI Community license key from https://primeui.dev/licenses/community
    * Leave this empty until you have your own key. Do not commit a real key.

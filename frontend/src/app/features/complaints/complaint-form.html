@@ -9,7 +9,7 @@
   data-testid="complaint-dialog"
 >
   <form id="complaint-form" class="form" [formGroup]="form" (ngSubmit)="save()">
-    <p class="hint">Status is set to Open. The complaint is recorded for Demo User.</p>
+    <p class="hint">Status is set to Open. The server records the time, and the complaint is saved for Demo User.</p>
 
     <div class="field">
       <label for="complaint-title">Subject</label>
@@ -105,6 +105,14 @@
     >
       Cancel
     </button>
-    <button pButton type="submit" form="complaint-form" data-testid="save-complaint">Save</button>
+    <button
+      pButton
+      type="submit"
+      form="complaint-form"
+      data-testid="save-complaint"
+      [disabled]="saving"
+    >
+      Save
+    </button>
   </ng-template>
 </p-dialog>

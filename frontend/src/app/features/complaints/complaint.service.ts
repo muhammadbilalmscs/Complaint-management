@@ -1,5 +1,8 @@
-import { Injectable, signal } from '@angular/core';
-import { Complaint, ComplaintCategory, ComplaintPriority } from './complaint.model';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
+import { Observable, catchError, map, of, switchMap, tap, throwError } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { Complaint, ComplaintCategory, ComplaintPriority, ComplaintStatus } from './complaint.model';
 
 export interface NewComplaint {
   title: string;
@@ -9,115 +12,82 @@ export interface NewComplaint {
   createdAt: Date;
 }
 
+export interface UpdateComplaint {
+  title: string;
+  description: string;
+  category: ComplaintCategory;
+  priority: ComplaintPriority;
+  status: ComplaintStatus;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ComplaintService {
-  readonly complaints = signal<Complaint[]>([
-    {
-      id: 1,
-      title: 'Road surface damage on High Street',
-      description: 'A pothole near the bus stop is damaging vehicles.',
-      category: 'Transport',
-      priority: 'Medium',
-      status: 'Open',
-      createdAt: '2026-09-20T12:00:00',
-      createdBy: 'Amina Shah',
-    },
-    {
-      id: 2,
-      title: 'Water leak on Oak Avenue',
-      description: 'Water is pooling on the pavement outside number 14.',
-      category: 'Utilities',
-      priority: 'High',
-      status: 'Open',
-      createdAt: '2026-09-18T12:00:00',
-      createdBy: 'Jonas Berg',
-    },
-    {
-      id: 3,
-      title: 'Night noise from the market',
-      description: 'Loading vehicles arrive after midnight on weekdays.',
-      category: 'Other',
-      priority: 'Low',
-      status: 'Closed',
-      createdAt: '2026-08-28T12:00:00',
-      createdBy: 'Elena Rossi',
-    },
-    {
-      id: 4,
-      title: 'Litter in Riverside Park',
-      description: 'Bins near the playground are overflowing.',
-      category: 'Environment',
-      priority: 'Medium',
-      status: 'In Progress',
-      createdAt: '2026-09-12T12:00:00',
-      createdBy: 'Amina Shah',
-    },
-    {
-      id: 5,
-      title: 'Library opening hours',
-      description: 'Saturday hours are too short for students.',
-      category: 'Public Services',
-      priority: 'Low',
-      status: 'Resolved',
-      createdAt: '2026-09-08T12:00:00',
-      createdBy: 'Noah Williams',
-    },
-    {
-      id: 6,
-      title: 'Bridge inspection request',
-      description: 'The footbridge railing is loose at the north end.',
-      category: 'Infrastructure',
-      priority: 'High',
-      status: 'Open',
-      createdAt: '2026-09-22T12:00:00',
-      createdBy: 'Jonas Berg',
-    },
-    {
-      id: 7,
-      title: 'Street lighting on Mill Lane',
-      description: 'Three lamps have been out for a week.',
-      category: 'Utilities',
-      priority: 'Medium',
-      status: 'In Progress',
-      createdAt: '2026-09-15T12:00:00',
-      createdBy: 'Elena Rossi',
-    },
-    {
-      id: 8,
-      title: 'Bus stop shelter missing panel',
-      description: 'The glass panel on the eastbound shelter is gone.',
-      category: 'Transport',
-      priority: 'Low',
-      status: 'Resolved',
-      createdAt: '2026-09-04T12:00:00',
-      createdBy: 'Noah Williams',
-    },
-  ]);
+  private readonly http = inject(HttpClient);
+  private readonly collectionUrl = `${environment.apiUrl}/complaints`;
 
-  create(draft: NewComplaint): Complaint {
-    const complaint: Complaint = {
-      id: this.nextId(),
+  readonly complaints = signal<Complaint[]>([]);
+  readonly loadError = signal(false);
+
+  load(): Observable<Complaint[]> {
+    return this.http.get<Complaint[]>(this.collectionUrl).pipe(
+      tap((items) => {
+        this.loadError.set(false);
+        this.complaints.set(items);
+      }),
+      catchError((error: unknown) => {
+        this.loadError.set(true);
+        return throwError(() => error);
+      }),
+    );
+  }
+
+  getById(id: number): Observable<Complaint> {
+    return this.http.get<Complaint>(`${this.collectionUrl}/${id}`);
+  }
+
+  create(draft: NewComplaint): Observable<Complaint> {
+    const body = {
       title: draft.title.trim(),
       description: draft.description.trim(),
       category: draft.category,
       priority: draft.priority,
-      status: 'Open',
-      createdAt: toCreatedAt(draft.createdAt),
-      createdBy: 'Demo User',
     };
 
-    this.complaints.update((current) => [complaint, ...current]);
-    return complaint;
+    return this.http.post<Complaint>(this.collectionUrl, body).pipe(
+      tap((created) => {
+        this.complaints.update((current) => [
+          created,
+          ...current.filter((item) => item.id !== created.id),
+        ]);
+      }),
+      switchMap((created) =>
+        this.load().pipe(
+          map(() => created),
+          catchError(() => of(created)),
+        ),
+      ),
+    );
   }
 
-  private nextId(): number {
-    return this.complaints().reduce((highest, complaint) => Math.max(highest, complaint.id), 0) + 1;
+  update(id: number, changes: UpdateComplaint): Observable<Complaint> {
+    return this.http.put<Complaint>(`${this.collectionUrl}/${id}`, changes).pipe(
+      switchMap((updated) =>
+        this.load().pipe(
+          map(() => updated),
+          catchError(() => of(updated)),
+        ),
+      ),
+    );
   }
-}
 
-function toCreatedAt(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}T12:00:00`;
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.collectionUrl}/${id}`).pipe(
+      switchMap(() =>
+        this.load().pipe(
+          map(() => undefined),
+          catchError(() => of(undefined)),
+        ),
+      ),
+    );
+  }
 }

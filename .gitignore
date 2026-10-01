@@ -1,0 +1,15 @@
+# .NET
+**/bin/
+**/obj/
+.vs/
+*.user
+*.suo
+
+# Local database credentials. Copy appsettings.Development.example.json and fill in the password.
+backend/CivicConnect.Api/appsettings.Development.json
+
+# Local PostgreSQL data
+postgres-data/
+
+# Angular files copied into the API only during the Azure publish
+backend/CivicConnect.Api/wwwroot/

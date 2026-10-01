@@ -10,9 +10,7 @@ This project is not affiliated with or endorsed by the European Council or the C
 
 ## Status
 
-Phase 3 is complete: the complaint list and a New Complaint dialog built with reactive forms. The Angular app can be hosted on Azure Static Web Apps with the in-memory sample complaints. There is no API yet.
-
-Later phases add the ASP.NET Core API, PostgreSQL, authentication, ActiveMQ, Docker, broader GitHub Actions, and the rest of the Azure deployment.
+Phase 4 is complete: the Angular app reads and creates complaints through an ASP.NET Core API, and Entity Framework Core stores them in PostgreSQL. Authentication, ActiveMQ, Docker, and Azure database hosting are later phases.
 
 ## Technology in this phase
 
@@ -38,10 +36,90 @@ npm install
 npm start
 ```
 
-Open http://localhost:4200/. You should see the CivicConnect header and a complaints table filled with sample rows. New Complaint opens a dialog. Saving a valid complaint shows a success toast and adds the row to the table. Dashboard counts the same in-memory list.
+Open http://localhost:4200/ after the API is running. The complaints table and dashboard load from PostgreSQL. New Complaint opens a dialog. Saving a valid complaint sends it to the API, shows a success toast, and adds the row to the table. The row is still there after a browser refresh.
+
+## Phase 4 – ASP.NET Core API + PostgreSQL
+
+The backend is one ASP.NET Core Web API project. It uses Entity Framework Core and the Npgsql provider. There is no authentication in this phase.
+
+- .NET 10 (`net10.0`), the installed LTS SDK
+- ASP.NET Core Web API
+- Entity Framework Core
+- PostgreSQL
+- Swagger UI in Development
+
+Angular calls the API through one setting:
+
+- Local `ng serve` uses `frontend/src/environments/environment.ts`: `http://localhost:5000/api`
+- The production build uses `environment.production.ts`: `/api`
+
+The Azure site is served by the API, so the browser calls the same host. Local development allows `http://localhost:4200` through CORS. The Azure site origin is also listed in `Cors:AllowedOrigins`.
+
+### API endpoints
+
+| Method | Path | Success |
+| --- | --- | --- |
+| GET | `/api/complaints` | 200 and the complaint list |
+| GET | `/api/complaints/{id}` | 200, or 404 when the id is missing |
+| POST | `/api/complaints` | 201 Created |
+| PUT | `/api/complaints/{id}` | 200, or 404 when the id is missing |
+| DELETE | `/api/complaints/{id}` | 204, or 404 when the id is missing |
+
+POST requires title, description, category, and priority. The API sets status to Open, sets the created time, and records the complaint for Demo User. An invalid body returns 400.
+
+### Configure PostgreSQL
+
+Install PostgreSQL and create a database named `civicconnect`. Copy the example settings and put your local password in the copy. That file is gitignored.
+
+```powershell
+Copy-Item backend\CivicConnect.Api\appsettings.Development.example.json backend\CivicConnect.Api\appsettings.Development.json
+```
+
+You can set the same value without editing the file:
+
+```powershell
+$env:ConnectionStrings__DefaultConnection = "Host=localhost;Port=5432;Database=civicconnect;Username=postgres;Password=YOUR_PASSWORD"
+```
+
+Do not commit a real password.
+
+### Run migrations and start the API
+
+From the repository root:
+
+```powershell
+cd backend
+dotnet tool restore
+dotnet restore CivicConnect.Api
+dotnet ef database update --project CivicConnect.Api --startup-project CivicConnect.Api
+dotnet run --project CivicConnect.Api --launch-profile http
+```
+
+`dotnet run` applies pending migrations and, when the complaints table is empty, inserts the original sample rows.
+
+- API: http://localhost:5000
+- Swagger: http://localhost:5000/swagger
+
+### Start Angular
+
+In a second terminal:
+
+```powershell
+cd frontend
+npm install
+npm start
+```
+
+Open http://localhost:4200/. The complaint list requests `GET http://localhost:5000/api/complaints`. Saving the New Complaint dialog sends `POST http://localhost:5000/api/complaints`, then reloads the list. If the API is down, the page shows an error toast and does not invent a saved complaint. If saving fails, the dialog stays open.
 
 ```powershell
 cd frontend
 npm test
 npm run build
 ```
+
+### Azure
+
+A push to `main` builds the Angular app, publishes the API with those files, and deploys that package to the CivicConnect App Service. The workflow switches the Linux stack to `DOTNETCORE|10.0` and starts `dotnet CivicConnect.Api.dll`.
+
+The API reads `ConnectionStrings__DefaultConnection`. Put the Azure PostgreSQL connection string in the App Service configuration, or store it as the GitHub secret `POSTGRES_CONNECTION_STRING` so the workflow sets it. Do not commit the password. Without that setting the site cannot open the database.

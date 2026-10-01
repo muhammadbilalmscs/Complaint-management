@@ -1,7 +1,13 @@
 <section class="page">
   <h1>Dashboard</h1>
   <p-card header="Complaint summary" data-testid="dashboard-summary">
-    <p>{{ openCount() }} open complaints out of {{ totalCount() }} in the sample list.</p>
+    @if (loadError()) {
+      <p-message severity="error">
+        The complaint summary could not be loaded. Start the API and refresh this page.
+      </p-message>
+    } @else {
+      <p>{{ openCount() }} open complaints out of {{ totalCount() }} recorded complaints.</p>
+    }
     <ng-template #footer>
       <button pButton type="button" routerLink="/complaints">View complaints</button>
     </ng-template>
