@@ -13,7 +13,7 @@ if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"
     builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 }
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = ResolveConnectionString(builder.Configuration);
 var useSqlite = string.IsNullOrWhiteSpace(connectionString);
 string? sqlitePath = null;
 
@@ -67,7 +67,16 @@ await using (var scope = app.Services.CreateAsyncScope())
     }
     else
     {
-        await db.Database.MigrateAsync();
+        try
+        {
+            await db.Database.MigrateAsync();
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(
+                "PostgreSQL is configured, but the database could not be opened. Use the Azure server host, database civicconnect, SSL, and a firewall rule that allows this App Service.",
+                ex);
+        }
     }
 
     await ComplaintSeed.SeedAsync(db);
@@ -91,6 +100,36 @@ app.MapControllers();
 app.MapFallbackToFile("index.html");
 
 app.Run();
+
+static string? ResolveConnectionString(IConfiguration configuration)
+{
+    var configured = configuration.GetConnectionString("DefaultConnection");
+    if (!string.IsNullOrWhiteSpace(configured))
+    {
+        return configured.Trim();
+    }
+
+    // Azure portal connection strings are exposed under these names, not ConnectionStrings__DefaultConnection.
+    string[] azureKeys =
+    [
+        "POSTGRESQLCONNSTR_DefaultConnection",
+        "CUSTOMCONNSTR_DefaultConnection",
+        "POSTGRESQLCONNSTR_POSTGRES_CONNECTION_STRING",
+        "CUSTOMCONNSTR_POSTGRES_CONNECTION_STRING",
+        "POSTGRES_CONNECTION_STRING"
+    ];
+
+    foreach (var key in azureKeys)
+    {
+        var value = configuration[key];
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            return value.Trim();
+        }
+    }
+
+    return null;
+}
 
 static string ResolveDataDirectory()
 {
