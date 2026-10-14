@@ -12,6 +12,7 @@ import { TagModule } from 'primeng/tag';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ComplaintForm } from './complaint-form';
 import { ComplaintCategory, ComplaintPriority, ComplaintStatus } from './complaint.model';
+import { formatComplaintReference } from './complaint-reference';
 import { ComplaintService } from './complaint.service';
 
 type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary';
@@ -40,6 +41,7 @@ export class ComplaintList {
   private readonly complaintsTable = viewChild<Table>('complaintsTable');
 
   readonly complaints = this.complaintService.complaints;
+  readonly formatComplaintReference = formatComplaintReference;
   readonly loadError = this.complaintService.loadError;
   readonly searchFields = ['title', 'description'];
   createVisible = false;
